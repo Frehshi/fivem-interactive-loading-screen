@@ -1,0 +1,365 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Cosmic State Roleplay</title>
+
+  <link rel="stylesheet" href="assets/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/fonts.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="assets/scripts/all.min.js"></script>
+
+  <style>
+    body { background: black; overflow: hidden; }
+
+    /* Background video layer */
+    .video-container{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+      background: #000;
+      opacity: 1;
+      pointer-events: none; /* keep clicks on UI */
+    }
+    .video-container video{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Your overlay */
+    .overlay {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      position: fixed;
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 100%;
+
+      backdrop-filter: blur(.5vw);
+      background: radial-gradient(circle at top right, #4500cf, rgba(123, 20, 233, 0.3));
+      transition: background .25s ease, backdrop-filter .25s ease, opacity .9s;
+      z-index: 1;
+    }
+
+    /* ✅ VIDEO MODE (overlay goes transparent so video shows clean) */
+    body.video-mode .overlay{
+      background: transparent !important;
+      backdrop-filter: none !important;
+    }
+
+    /* =========================================================
+       ✅ SOCIALS / OWNERSHIP TABS
+       ========================================================= */
+    .category-tabs{
+      display: flex;
+      gap: 1.6vw;
+      align-items: center;
+      width: fit-content;
+      padding: .85vw 1.2vw;
+      margin: 0 auto .9vw auto;
+
+      background: linear-gradient(90deg, #3b00b8, #7b14e9);
+      border-radius: .35vw;
+      box-shadow: 0 .8vw 2.2vw rgba(0,0,0,.35);
+      user-select: none;
+    }
+    .category-tab{
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: rgba(255,255,255,.88);
+      font-weight: 800;
+      letter-spacing: .08em;
+      font-size: .72vw;
+      padding: .2vw .15vw;
+      cursor: pointer;
+      position: relative;
+      text-transform: uppercase;
+    }
+    .category-tab.active{
+      color: #fff;
+    }
+    .category-tab.active::after{
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -.55vw;
+      height: .16vw;
+      border-radius: 1vw;
+      background: rgba(255,255,255,.92);
+    }
+
+    /* Toggle which page shows */
+    .carousel.show-socials .staff{ display: none !important; }
+    .carousel.show-ownership .socialmedia{ display: none !important; }
+
+    /* =========================================================
+       ✅ SOCIALS PAGE CARDS
+       ========================================================= */
+    .socialmedia{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .socials-wrap{
+      width: min(52vw, 92%);
+      display: flex;
+      flex-direction: column;
+      gap: 1vw;
+    }
+    .socials-grid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1vw;
+    }
+    .social-card{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(.35vw);
+      border-radius: .9vw;
+      padding: 1.2vw 1.15vw;
+
+      display: flex;
+      flex-direction: column;
+      gap: .35vw;
+
+      text-align: left;
+      color: #fff;
+      cursor: pointer;
+
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .social-card:hover{
+      transform: translateY(-.12vw);
+      box-shadow: 0 1.2vw 2.8vw rgba(0,0,0,.45);
+      border-color: rgba(255,255,255,.18);
+    }
+    .social-card .icon{
+      font-size: 1.55vw;
+      opacity: .95;
+      margin-bottom: .25vw;
+    }
+    .social-card .name{
+      font-size: .95vw;
+      font-weight: 900;
+      letter-spacing: .02em;
+    }
+    .social-card .sub{
+      font-size: .72vw;
+      opacity: .78;
+      line-height: 1.25;
+    }
+    .social-card.disabled{
+      opacity: .55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .social-card .soon{
+      display: inline-block;
+      margin-left: .45vw;
+      font-size: .58vw;
+      font-weight: 900;
+      letter-spacing: .12em;
+      padding: .12vw .42vw;
+      border-radius: 1vw;
+      border: 1px solid rgba(255,255,255,.22);
+      opacity: .9;
+    }
+  </style>
+</head>
+
+<body tabindex="0">
+
+  <!-- Background Video -->
+  <div class="video-container" id="videoWrap">
+    <video id="video" autoplay muted loop playsinline preload="auto">
+      <source src="assets/videos/video.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <img id="cursor" src="assets/media/cursor.png" alt="cursor">
+
+  <div class="overlay">
+    <div class="cornercontainer">
+      <div class="top">
+        <div class="left">
+          <p class="title">Cosmic State Roleplay</p>
+          <p class="date" id="date"></p>
+          <p class="state" id="clients">0/0</p>
+        </div>
+      </div>
+
+      <div class="sounds">
+        <div class="switch">
+          <label class="form-switch">
+            <!-- ✅ ON by default -->
+            <input type="checkbox" id="sounds" checked>
+            <i></i>
+          </label>
+          <span class="left">Off</span>
+          <span class="right">On</span>
+        </div>
+        <div class="icon"><i class="fas fa-volume"></i></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="information">
+        <p class="title">Cosmic State Roleplay</p>
+
+        <div class="description">
+          <p>
+            Welcome to Cosmic State Roleplay!
+            This is a place where you can do whatever you want and build your own story.
+            <br><br>
+            Join one of our departments and work your way up, whether that’s law enforcement, DOT, or another public service role.
+            Want to live on the edge instead? Become a criminal, run from the law, plan jobs, and make a name for yourself.
+            Or just chill as a civilian, get a job, start a business, meet people, and live your life in the city.
+            <br><br>
+            We focus on realistic, fun roleplay with an active community and staff that actually care.
+            Whether you’re brand new to roleplay or have been doing it for years, you’ll fit right in here.
+            <br><br>
+            Jump in, get creative, and see where your story takes you.
+          </p>
+        </div>
+
+        <div class="buttons">
+          <button id="read-more">
+            Read more <i class="fal fa-long-arrow-right" style="margin-left: 0.4vw;font-size: 0.9vw;"></i>
+          </button>
+          <button id="collapse" style="display:none;">Collapse</button>
+        </div>
+      </div>
+
+      <div class="loader">
+        <div class="logo">
+          <img class="transparent-logo" src="assets/media/transparent-logo.png" alt="logo">
+          <img class="filled-logo" src="assets/media/filled-logo.png" alt="logo-fill">
+        </div>
+        <p class="progress">0%</p>
+        <p class="description">Loading server..</p>
+      </div>
+
+      <div class="categories">
+
+        <!-- ✅ Tabs (OWNERSHIP default) -->
+        <div class="category-tabs" id="categoryTabs">
+          <button class="category-tab" data-view="socials">SOCIALS</button>
+          <button class="category-tab active" data-view="ownership">OWNERSHIP</button>
+        </div>
+
+        <div class="carousel show-ownership" id="categoryCarousel">
+
+          <!-- ✅ SOCIALS PAGE -->
+          <div class="socialmedia">
+            <div class="socials-wrap">
+              <div class="socials-grid">
+
+                <button class="social-card" type="button" data-url="https://cosmicstaterp.tebex.io/">
+                  <div class="icon"><i class="fas fa-store"></i></div>
+                  <div class="name">Store</div>
+                  <div class="sub">Support the server to get access to custom perks!</div>
+                </button>
+
+                <button class="social-card" type="button" data-url="https://discord.gg/fREeXcZcCG">
+                  <div class="icon"><i class="fab fa-discord"></i></div>
+                  <div class="name">Discord</div>
+                  <div class="sub">Join the community and get involved!</div>
+                </button>
+
+                <div class="social-card disabled">
+                  <div class="icon"><i class="fas fa-hashtag"></i></div>
+                  <div class="name">Social Media <span class="soon">SOON</span></div>
+                  <div class="sub">Social Media page coming soon</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ OWNERSHIP PAGE -->
+          <div class="staff">
+            <div class="previous"></div>
+            <div class="cards">
+              <div class="innercards"></div>
+              <div class="pages"></div>
+            </div>
+            <div class="next"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="hideoverlay" title="Hotkeys: F1 Toggle Video | F2 Switch Video">
+        <div class="binds">
+          <div class="bind" id="bindF1">F1</div>
+          <div class="bind" id="bindF2">F2</div>
+        </div>
+        F1 TOGGLE VIDEO / F2 SWITCH VIDEO
+      </div>
+
+    </div>
+  </div>
+
+  <script src="assets/scripts/config.js" type="text/javascript"></script>
+  <script src="assets/scripts/main.js" type="text/javascript"></script>
+
+  <!-- ✅ Tabs + External link opener -->
+  <script>
+    (function(){
+      const carousel = document.getElementById('categoryCarousel');
+      const tabsWrap = document.getElementById('categoryTabs');
+      if (!carousel || !tabsWrap) return;
+
+      function setView(view){
+        carousel.classList.remove('show-socials','show-ownership');
+        carousel.classList.add(view === 'ownership' ? 'show-ownership' : 'show-socials');
+
+        tabsWrap.querySelectorAll('.category-tab').forEach(btn=>{
+          btn.classList.toggle('active', btn.dataset.view === view);
+        });
+      }
+
+      tabsWrap.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.category-tab');
+        if (!btn) return;
+        setView(btn.dataset.view);
+      });
+
+      function openExternal(url){
+        if (!url || url === 'https://cosmicstaterp.tebex.io/' || url === 'https://discord.gg/fREeXcZcCG') return;
+        try{
+          if (typeof invokeNative === "function") {
+            invokeNative("openUrl", url);
+            return;
+          }
+        } catch(e){}
+        try { window.open(url, "_blank"); } catch(e){}
+      }
+
+      document.addEventListener('click', (e)=>{
+        const el = e.target.closest('[data-url]');
+        if (!el) return;
+        openExternal(el.getAttribute('data-url'));
+      });
+
+      // ✅ default = ownership
+      setView('ownership');
+    })();
+  </script>
+</body>
+</html>
